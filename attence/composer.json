@@ -1,0 +1,8 @@
+{
+    "require": {
+        "firebase/php-jwt": "^5.0",
+        "phpseclib/phpseclib": "^2.0",
+        "guzzlehttp/guzzle": "^6.3",
+        "elfsundae/urlsafe-base64": "^1.1"
+    }
+}
