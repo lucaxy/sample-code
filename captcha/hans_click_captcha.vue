@@ -41,192 +41,192 @@
     </div>
 </template>
 <script>
-	import util from '../libs/util';
-	import qs from 'qs';
+    import util from '../libs/util';
+    import qs from 'qs';
     export default {
         data(){
             return {
-	            formItem: {
-		            captcha:'',
-	            },
-	            captchaType:this.$store.state.server_data.captchaType,
-	            captchaImg:this.$store.state.captcha_data.captchaImg,
-	            clickCaptchaTextArr:this.$store.state.captcha_data.captchaText,
-	            clickCaptchaTip:'请依次点击上图中',
-	            clickCaptchaInfo:[],
-	            clickCaptchaBarColor:'#5cadff',
-	            clickCaptchaBarColorOri:'#5cadff',
-	            clickCaptchaBarColorSuccess:'#19be6b',
-	            clickCaptchaBarColorFailure:'#ed3f14',
-	            clickCaptchaTextColor:this.$store.state.captcha_data.captchaText.map(function(){
-		            return '#000';
-	            }),
-	            destroyed:false
+                formItem: {
+                    captcha:'',
+                },
+                captchaType:this.$store.state.server_data.captchaType,
+                captchaImg:this.$store.state.captcha_data.captchaImg,
+                clickCaptchaTextArr:this.$store.state.captcha_data.captchaText,
+                clickCaptchaTip:'请依次点击上图中',
+                clickCaptchaInfo:[],
+                clickCaptchaBarColor:'#5cadff',
+                clickCaptchaBarColorOri:'#5cadff',
+                clickCaptchaBarColorSuccess:'#19be6b',
+                clickCaptchaBarColorFailure:'#ed3f14',
+                clickCaptchaTextColor:this.$store.state.captcha_data.captchaText.map(function(){
+                    return '#000';
+                }),
+                destroyed:false
             }
         },
-	    mounted(){
-		    let thisApp=this;
-		    if(this.captchaType==='slide'){
-			    this.showSpin=true;
-			    util.loadScript('/index_org/assets/gt.js',function () {
-				    util.ajax.get("/lib/StartCaptchaServlet.php?t="+ (new Date()).getTime())
-					    .then(function(res){
-						    thisApp.showSpin=false;
-						    if(thisApp.destroyed) return;
-						    window.initGeetest({
-							    gt: res.data.gt,
-							    challenge: res.data.challenge,
-							    product: "popup",
-							    offline: !res.data.success,
-							    new_captcha: res.data.new_captcha,
-							    width:'100%',
-						    }, function(captchaObj){
-							    if(!thisApp.destroyed)
-							        captchaObj.appendTo('#geetestCaptcha');
-							    else
-							    	return ;
-							    captchaObj.onReady(function () {
-								    document.querySelector('#geetestWait').style.display='none';
-							    });
-							    captchaObj.onSuccess(function () {
+        mounted(){
+            let thisApp=this;
+            if(this.captchaType==='slide'){
+                this.showSpin=true;
+                util.loadScript('/index_org/assets/gt.js',function () {
+                    util.ajax.get("/lib/StartCaptchaServlet.php?t="+ (new Date()).getTime())
+                        .then(function(res){
+                            thisApp.showSpin=false;
+                            if(thisApp.destroyed) return;
+                            window.initGeetest({
+                                gt: res.data.gt,
+                                challenge: res.data.challenge,
+                                product: "popup",
+                                offline: !res.data.success,
+                                new_captcha: res.data.new_captcha,
+                                width:'100%',
+                            }, function(captchaObj){
+                                if(!thisApp.destroyed)
+                                    captchaObj.appendTo('#geetestCaptcha');
+                                else
+                                    return ;
+                                captchaObj.onReady(function () {
+                                    document.querySelector('#geetestWait').style.display='none';
+                                });
+                                captchaObj.onSuccess(function () {
                                     thisApp.updateCaptchaValue();
-							    });
-							    captchaObj.onError(function () {
-								    thisApp.updateCaptchaValue();
-							    });
-							    window.gt = captchaObj;
-						    });
-					    })
-					    .catch(function(err){
-						    console.log(err);
-					    })
-			    });
-		    }
-	    },
+                                });
+                                captchaObj.onError(function () {
+                                    thisApp.updateCaptchaValue();
+                                });
+                                window.gt = captchaObj;
+                            });
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                });
+            }
+        },
         methods:{
-        	reset:function () {
-		        if(this.captchaType==='slide'){
-			        window.gt.reset();
-			        this.updateCaptchaValue();
+            reset:function () {
+                if(this.captchaType==='slide'){
+                    window.gt.reset();
+                    this.updateCaptchaValue();
                 }else{
-		        	this.fetchNewCaptchaImg();
+                    this.fetchNewCaptchaImg();
                 }
-	        },
+            },
             destroy:function () {
                 this.destroyed=true;
             },
-	        updateCaptchaValue:function () {
-		        let result;
-		        if(this.captchaType==='slide'){
-			        let gtResult = window.gt.getValidate();
-			        if(gtResult){
-				        result={
-					        'geetest_challenge':gtResult.geetest_challenge,
-					        'geetest_validate':gtResult.geetest_validate,
-					        'geetest_seccode':gtResult.geetest_seccode,
-				        };
+            updateCaptchaValue:function () {
+                let result;
+                if(this.captchaType==='slide'){
+                    let gtResult = window.gt.getValidate();
+                    if(gtResult){
+                        result={
+                            'geetest_challenge':gtResult.geetest_challenge,
+                            'geetest_validate':gtResult.geetest_validate,
+                            'geetest_seccode':gtResult.geetest_seccode,
+                        };
                     }else{
-			        	result='';
+                        result='';
                     }
-		        }else{
-		        	if(this.formItem.captcha){
-				        result = {
-					        captcha:this.formItem.captcha
-				        };
+                }else{
+                    if(this.formItem.captcha){
+                        result = {
+                            captcha:this.formItem.captcha
+                        };
                     }else{
-				        result='';
+                        result='';
                     }
-		        }
-		        this.$emit('change', result);
-	        },
-	        fetchNewCaptchaImg:function () {
-		        let thisApp=this;
-		        let newAction=this.captchaType==='img'?'getNewCaptchaImg':'getNewClickCaptcha';
-		        util.ajax.get("/captchaController.php?action="+newAction+"&t="+ (new Date()).getTime())
-			        .then(function(res){
-				        if(res.data.status===200){
-					        thisApp.captchaImg=res.data.captchaImg;
-					        if(thisApp.captchaType==='click'){
-						        thisApp.clickCaptchaTextArr=res.data.captchaText;
-						        thisApp.clickCaptchaBarColor=thisApp.clickCaptchaBarColorOri;
-						        thisApp.clickCaptchaInfo=[];
-						        thisApp.clickCaptchaTextColor=thisApp.clickCaptchaTextArr.map(function (v,i) {
-							        return '#000';
-						        });
-					        }
-					        thisApp.formItem.captcha='';
-					        thisApp.updateCaptchaValue();
-					        thisApp.$store.commit('updateCaptchaData',thisApp.captchaType==='img'?{
-						        captchaImg:res.data.captchaImg,
-						        captchaText:[],
-					        }:{
-						        captchaImg:res.data.captchaImg,
-						        captchaText:res.data.captchaText,
-					        });
-				        }
-			        })
-			        .catch(function(err){
-				        console.log(err);
-			        })
-	        },
-	        handleCaptchaClick:function (e) {
-		        if(this.clickCaptchaTextArr.length===this.clickCaptchaInfo.length){
-			        return ;
-		        }
-		        let clickContainer=this.$refs['click-captcha-container'];
-		        let hOffsetTop=function( elem ){
-			        let top = elem.offsetTop;
-			        let parent = elem.offsetParent;
-			        while(parent){
-				        top += parent.offsetTop;
-				        parent = parent.offsetParent;
-			        }
-			        return top;
-		        };
-		        let hOffsetLeft=function( elem ){
-			        let left = elem.offsetLeft;
-			        let parent = elem.offsetParent;
-			        while( parent){
-				        left += parent.offsetLeft;
-				        parent = parent.offsetParent;
-			        }
-			        return left;
-		        };
-		        let scrollLeft = document.body.scrollLeft || (document.documentElement && document.documentElement.scrollLeft);
-		        let scrollTop = document.body.scrollTop || (document.documentElement && document.documentElement.scrollTop);
-		        this.clickCaptchaInfo.push((scrollLeft + e.clientX - hOffsetLeft(clickContainer)) + ',' + (scrollTop + e.clientY - hOffsetTop(clickContainer)));
-		        let cLength=this.clickCaptchaInfo.length;
-		        this.clickCaptchaTextColor=this.clickCaptchaTextArr.map(function (v,i) {
-			        return i<cLength?'#fff':'#000';
-		        });
-		        if(this.clickCaptchaTextArr.length===cLength){
-			        let postParams={
-				        info:[this.clickCaptchaInfo.join('-'), clickContainer.clientWidth, clickContainer.clientHeight].join(';')
-			        };
+                }
+                this.$emit('change', result);
+            },
+            fetchNewCaptchaImg:function () {
+                let thisApp=this;
+                let newAction=this.captchaType==='img'?'getNewCaptchaImg':'getNewClickCaptcha';
+                util.ajax.get("/captchaController.php?action="+newAction+"&t="+ (new Date()).getTime())
+                    .then(function(res){
+                        if(res.data.status===200){
+                            thisApp.captchaImg=res.data.captchaImg;
+                            if(thisApp.captchaType==='click'){
+                                thisApp.clickCaptchaTextArr=res.data.captchaText;
+                                thisApp.clickCaptchaBarColor=thisApp.clickCaptchaBarColorOri;
+                                thisApp.clickCaptchaInfo=[];
+                                thisApp.clickCaptchaTextColor=thisApp.clickCaptchaTextArr.map(function (v,i) {
+                                    return '#000';
+                                });
+                            }
+                            thisApp.formItem.captcha='';
+                            thisApp.updateCaptchaValue();
+                            thisApp.$store.commit('updateCaptchaData',thisApp.captchaType==='img'?{
+                                captchaImg:res.data.captchaImg,
+                                captchaText:[],
+                            }:{
+                                captchaImg:res.data.captchaImg,
+                                captchaText:res.data.captchaText,
+                            });
+                        }
+                    })
+                    .catch(function(err){
+                        console.log(err);
+                    })
+            },
+            handleCaptchaClick:function (e) {
+                if(this.clickCaptchaTextArr.length===this.clickCaptchaInfo.length){
+                    return ;
+                }
+                let clickContainer=this.$refs['click-captcha-container'];
+                let hOffsetTop=function( elem ){
+                    let top = elem.offsetTop;
+                    let parent = elem.offsetParent;
+                    while(parent){
+                        top += parent.offsetTop;
+                        parent = parent.offsetParent;
+                    }
+                    return top;
+                };
+                let hOffsetLeft=function( elem ){
+                    let left = elem.offsetLeft;
+                    let parent = elem.offsetParent;
+                    while( parent){
+                        left += parent.offsetLeft;
+                        parent = parent.offsetParent;
+                    }
+                    return left;
+                };
+                let scrollLeft = document.body.scrollLeft || (document.documentElement && document.documentElement.scrollLeft);
+                let scrollTop = document.body.scrollTop || (document.documentElement && document.documentElement.scrollTop);
+                this.clickCaptchaInfo.push((scrollLeft + e.clientX - hOffsetLeft(clickContainer)) + ',' + (scrollTop + e.clientY - hOffsetTop(clickContainer)));
+                let cLength=this.clickCaptchaInfo.length;
+                this.clickCaptchaTextColor=this.clickCaptchaTextArr.map(function (v,i) {
+                    return i<cLength?'#fff':'#000';
+                });
+                if(this.clickCaptchaTextArr.length===cLength){
+                    let postParams={
+                        info:[this.clickCaptchaInfo.join('-'), clickContainer.clientWidth, clickContainer.clientHeight].join(';')
+                    };
 
-			        let thisApp=this;
-			        util.ajax.post("/captchaController.php?action=checkClickCaptcha&t="+ (new Date()).getTime(),qs.stringify(postParams) ,{
-				        headers: {
-					        'Content-Type': 'application/x-www-form-urlencoded',
-				        },
-			        })
-				        .then(function(res){
-					        if(res.data.status===200){
-						        if(!res.data.checked){
-							        thisApp.clickCaptchaBarColor=thisApp.clickCaptchaBarColorFailure;
-							        thisApp.fetchNewCaptchaImg();
-						        }else{
-							        thisApp.formItem.captcha=postParams.info;
-							        thisApp.updateCaptchaValue();
-							        thisApp.clickCaptchaBarColor=thisApp.clickCaptchaBarColorSuccess;
-						        }
-					        }
-				        })
-				        .catch(function(err){
-					        console.log(err);
-				        })
-		        }
-	        }
+                    let thisApp=this;
+                    util.ajax.post("/captchaController.php?action=checkClickCaptcha&t="+ (new Date()).getTime(),qs.stringify(postParams) ,{
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    })
+                        .then(function(res){
+                            if(res.data.status===200){
+                                if(!res.data.checked){
+                                    thisApp.clickCaptchaBarColor=thisApp.clickCaptchaBarColorFailure;
+                                    thisApp.fetchNewCaptchaImg();
+                                }else{
+                                    thisApp.formItem.captcha=postParams.info;
+                                    thisApp.updateCaptchaValue();
+                                    thisApp.clickCaptchaBarColor=thisApp.clickCaptchaBarColorSuccess;
+                                }
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                }
+            }
         }
     }
 </script>
