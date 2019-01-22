@@ -3,7 +3,7 @@
 ### 实现方式
 后端使用PHP的GD库对图片进行合成，前端使用vue组件形式调用
 ### 文件清单
-HansClickCaptcha.php后端核心调用类
+HansClickCaptcha.php后端核心调用类  
 hans_click_captcha.vue前端vue核心组件
 ### 特性
 1.文字倾斜随机角度`45°~-45°`  
